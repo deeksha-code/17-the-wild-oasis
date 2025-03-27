@@ -1,0 +1,732 @@
+1.creating project
+npm create vite@4
+
+2. go to project folder
+npm install
+
+3. install eslint plugin
+npm i eslint vite-plugin-eslint eslint-config-react-app --save
+
+4.Delete the  .eslintrc.cjs file
+ -If multiple ESLint configuration files exist in the same project, ESLint will prioritize one based on its internal resolution order, 
+ potentially causing conflicts.
+
+
+5.create eslintrc.json file(rc means resource configuration),add the below code
+{
+    "extends":"react-app" 
+}
+configuration file is extending the ESLint rules and settings from the "react-app" configuration.
+
+6.modify vite.config.json
+    before:
+    import { defineConfig } from 'vite'
+    import react from '@vitejs/plugin-react'
+
+    // https://vitejs.dev/config/
+    export default defineConfig({
+    plugins: [react()],
+    })
+
+    after:
+    ESLint can detect errors before you run your application, such as syntax issues or logic bugs.
+    import { defineConfig } from 'vite'
+    import react from '@vitejs/plugin-react'
+    import eslint from "vite-plugin-eslint"
+    // https://vitejs.dev/config/
+    export default defineConfig({
+    plugins: [react(),eslint()],
+    })
+
+7.delete app.css ,index.css,assests folder
+8.Copy the starter folder from the Ultimate React Course, move its contents into the src folder, and then delete the starter folder.
+9.use of styled components
+   -Very popular way of writing component-scoped CSS, right  inside JavaScript. A technology worth learning
+   - installation
+     npm i styled-components
+
+   -example 1
+        import styled from "styled-components";
+        const H1=styled.h1`
+        font-size:30px;
+        font-weight:600
+        `
+
+
+        function App() {
+        return <div>
+            <H1>The wild Oasis</H1>
+        </div>;
+        }
+
+        export default App;
+    -Creates a styled component named H1 based on an <h1> element.
+    -It applies the following styles:
+        font-size: 30px; → Sets the font size to 30 pixels.
+        font-weight: 600; → Makes the text slightly bold (semi-bold).
+    -Defines the main App component.
+        Inside the JSX, it renders:
+        A <div> as a wrapper.
+        The H1 styled component, displaying "The Wild Oasis" with the applied styles.
+   
+    -example 2
+        import styled from "styled-components";
+
+        const H1=styled.h1`
+        font-size:30px;
+        font-weight:600;
+        background-color: yellow;
+        `
+        const Button=styled.button`
+        font-size:1.4rem;
+        padding: 1.2rem 1.6rem;
+        font-weight: 500;
+        border:none;
+        border-radius:7px;
+        background-color: purple;
+        color: white;
+        margin: 20px;
+        cursor:pointer;
+        `
+        const Input=styled.input`
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 0.8rem 1.2rem;
+        `
+        const StyledApp=styled.div`
+        background-color: orangered;
+        padding: 20px;
+        `
+
+
+        function App() {
+        return <StyledApp>
+            <H1>The wild Oasis</H1>
+            <Button onClick={()=>alert("check in")}>Check in</Button>
+            <Button onClick={()=>alert("check in")}>Check out</Button>
+            <Input type="number" placeholder="Number of guests"/>
+        </StyledApp>;
+        }
+
+        export default App;
+
+
+10.creating global styles
+
+    import { createGlobalStyle } from "styled-components";
+    const GlobalStyles=createGlobalStyle`
+ 
+    img {
+    max-width: 100%;
+
+    /* For dark mode */
+    filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
+    }
+    `;
+    export default GlobalStyles;
+    It can include in files as below
+    <GlobalStyles />
+
+
+
+11.use of 'as' prop in styled component
+
+12.Setting up routes
+    -npm i react-router-dom@6
+    -defined in declarative way(not like data loading as in pizza project)
+13.create  new file APP Layout  in Ui folder for defining layouts
+14.npm i react-icons
+   -example
+        import {
+        HiOutlineCalendarDays,
+        HiOutlineCog6Tooth,
+        HiOutlineHome,
+        HiOutlineHomeModern,
+        HiOutlineUser,
+        HiOutlineUsers,
+        } from "react-icons/hi2";
+        <li>
+          <StyledNavLink to="/bookings">
+            <HiOutlineCalendarDays />
+            <span>Bookings</span>
+          </StyledNavLink>
+        </li>
+15.supabase for backend
+   -Service that allows developers to easily create a back-end with a Postgres database 
+   -Automatically creates a database and API so we can easily request and receive data from the server 
+   password: fjqP76PUNx2ZDPCZ(signup)
+   -create a new project
+   -create the following table(global remote state)
+     1.Bookings
+     2.Cabins
+     3.Guests
+     4.settings
+     5.Users
+    -images can be uploaded to storage bucket in supabase
+16. connecting supabase to react app
+    npm install --save @supabase/supabase-js
+    create new file in the supabase.js service folder
+17.React query for fetching data from supabase(remote state management)
+    -When using React Query, if you delete table data in one window, it will also be removed in another window where the same data is being used without refreshing.
+    -npm i @tanstack/react-query@4
+
+    -usage example
+        import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+        import GlobalStyles from "./styles/GlobalStyles";
+        import Dashboard from "./pages/Dashboard";
+        import Bookings from "./pages/Bookings";
+        import Cabins from "./pages/Cabins";
+        import Users from "./pages/Users";
+        import Settings from "./pages/Settings";
+        import Account from "./pages/Account";
+        import Login from "./pages/Login";
+        import PageNotFound from "./pages/PageNotFound";
+        import AppLayout from "./ui/AppLayout";
+        import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+
+        const queryClient=new QueryClient({
+        defaultOptions:{
+            queries:{
+            staleTime:60*1000,//how much time data in cache should be stale
+            }
+        }
+        })
+
+        function App() {
+        return (
+            <QueryClientProvider client={queryClient}>
+                <GlobalStyles />
+                <BrowserRouter>
+                <Routes>
+                    <Route element={<AppLayout />}>
+                    <Route index element={<Navigate replace to="dashboard" />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="bookings" element={<Bookings />} />
+                    <Route path="cabins" element={<Cabins />} />
+                    <Route path="users" element={<Users />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="account" element={<Account />} />
+                    </Route>
+
+                    <Route path="login" element={<Login />} />
+                    <Route path="*" element={<PageNotFound />} />
+                </Routes>
+                </BrowserRouter>
+            </QueryClientProvider>
+        );
+        }
+
+        export default App;
+    
+    -for developemnt tools
+      npm install @tanstack/react-query-devtools@4
+       1.React Query Devtools (✅ Requires Code Setup)
+       2.You must import and include <ReactQueryDevtools /> in QueryClientProvider, as you've done.
+          This allows you to inspect queries within your app.
+          example:  
+           import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+           <ReactQueryDevtools initialIsOpen={false}/>
+    -
+
+
+
+
+18. npm i react-hot-toast
+    -react-hot-toast is a lightweight and customizable toast notification library for React.
+    example:
+    -App.jsx
+        import { Toaster } from "react-hot-toast";
+        
+          <Toaster
+        position="top-center"
+        gutter={12}
+        containerStyle={{
+          margin: "8px",
+        }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 5000,
+          },
+          style: {
+            fontSize: "16px",
+            maxWidth: "500px",
+            padding: "16px 24px",
+            backgroundColor: "var(--color-grey-0)",
+            color: "var(--color-grey-700)",
+          },
+        }}
+      />
+    -CabinRow.jsx
+
+        import toast from "react-hot-toast";
+
+        const {isLoading:isDeleting,mutate}=useMutation({
+        //  mutationFn:(id)=>deleteCabin(id),
+        mutationFn:deleteCabin,
+        onSuccess:()=>{
+                toast.success("cabin successfully deleted");
+                queryClient.invalidateQueries({
+                queryKey:['cabins'],
+                })     
+        },
+        onError:err=>toast.error(err.message),
+        });
+
+19.npm i react-hook-form@7
+     -react-hook-form is a lightweight and performant library for handling form validation in React applications. It helps manage form state, validation, and submission efficiently.
+    
+     -example using react hook form:
+      
+      import React from "react";
+      import { useForm } from "react-hook-form";
+
+      const MyForm = () => {
+        const { register, handleSubmit } = useForm();
+
+        const onSubmit = (data) => {
+          console.log(data);
+        };
+
+        return (
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <input {...register("name")} />
+            <button type="submit">Submit</button>
+          </form>
+        );
+      };
+
+      export default MyForm;
+
+
+
+      -example using usestate
+        import React, { useState } from "react";
+
+        const MyForm = () => {
+          const [name, setName] = useState("");
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            console.log({ name });
+          };
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input value={name} onChange={(e) => setName(e.target.value)} />
+              <button type="submit">Submit</button>
+            </form>
+          );
+        };
+
+        export default MyForm;
+20.Advanced React patterns
+  -Render props pattern
+     -example
+       The Render Prop Pattern allows the List component to be highly customizable without being tied to specific item structures. 
+       Instead of rendering fixed UI elements, it lets the parent component decide what to render by passing a function (render). 
+          import { useState } from "react";
+          import { faker } from "@faker-js/faker";
+          import "./styles.css";
+
+          const products = Array.from({ length: 20 }, () => {
+            return {
+              productName: faker.commerce.productName(),
+              description: faker.commerce.productDescription(),
+              price: faker.commerce.price()
+            };
+          });
+
+          const companies = Array.from({ length: 15 }, () => {
+            return {
+              companyName: faker.company.name(),
+              phrase: faker.company.catchPhrase()
+            };
+          });
+
+          function ProductItem({ product }) {
+            return (
+              <li className="product">
+                <p className="product-name">{product.productName}</p>
+                <p className="product-price">${product.price}</p>
+                <p className="product-description">{product.description}</p>
+              </li>
+            );
+          }
+
+          function CompanyItem({ company, defaultVisibility }) {
+            const [isVisible, setIsVisisble] = useState(defaultVisibility);
+
+            return (
+              <li
+                className="company"
+                onMouseEnter={() => setIsVisisble(true)}
+                onMouseLeave={() => setIsVisisble(false)}
+              >
+                <p className="company-name">{company.companyName}</p>
+                {isVisible && (
+                  <p className="company-phrase">
+                    <strong>About:</strong> {company.phrase}
+                  </p>
+                )}
+              </li>
+            );
+          }
+
+          function List({ title, items, render }) {
+            const [isOpen, setIsOpen] = useState(true);
+            const [isCollapsed, setIsCollapsed] = useState(false);
+
+            const displayItems = isCollapsed ? items.slice(0, 3) : items;
+
+            function toggleOpen() {
+              setIsOpen((isOpen) => !isOpen);
+              setIsCollapsed(false);
+            }
+
+            return (
+              <div className="list-container">
+                <div className="heading">
+                  <h2>{title}</h2>
+                  <button onClick={toggleOpen}>
+                    {isOpen ? <span>&or;</span> : <span>&and;</span>}
+                  </button>
+                </div>
+                {isOpen && <ul className="list">{displayItems.map(render)}</ul>}
+
+                <button onClick={() => setIsCollapsed((isCollapsed) => !isCollapsed)}>
+                  {isCollapsed ? `Show all ${items.length}` : "Show less"}
+                </button>
+              </div>
+            );
+          }
+
+          export default function App() {
+            return (
+              <div>
+                <h1>Render Props Demo</h1>
+
+                <div className="col-2">
+                  <List
+                    title="Products"
+                    items={products}
+                    render={(product) => (
+                      <ProductItem key={product.productName} product={product} />
+                    )}
+                  />
+                  <List
+                    title="Companies"
+                    items={companies}
+                    render={(company) => (
+                      <CompanyItem
+                        key={company.companyName}
+                        company={company}
+                        defaultVisibility={false}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          // LATER: Let's say we got this component from a 3rd-party library, and can't change it. But we still want to add the 2 toggle functionalities to it
+          function ProductList({ title, items }) {
+            return (
+              <ul className="list">
+                {items.map((product) => (
+                  <ProductItem key={product.productName} product={product} />
+                ))}
+              </ul>
+            );
+          }
+  -Higher Order Component pattern
+    A Higher-Order Component (HOC) is a function that takes a component as input and returns a new enhanced component with additional functionality.
+    code refer link: https://codesandbox.io/p/sandbox/react-render-props-starter-forked-h25mn4?file=%2Fsrc%2FApp.js%3A121%2C5
+
+    -example APP.js
+      import { useState } from "react";
+      import { faker } from "@faker-js/faker";
+      import "./styles.css";
+      import withToggles from "./HOC";
+
+      const products = Array.from({ length: 20 }, () => {
+        return {
+          productName: faker.commerce.productName(),
+          description: faker.commerce.productDescription(),
+          price: faker.commerce.price()
+        };
+      });
+
+      const companies = Array.from({ length: 15 }, () => {
+        return {
+          companyName: faker.company.name(),
+          phrase: faker.company.catchPhrase()
+        };
+      });
+
+      function ProductItem({ product }) {
+        return (
+          <li className="product">
+            <p className="product-name">{product.productName}</p>
+            <p className="product-price">${product.price}</p>
+            <p className="product-description">{product.description}</p>
+          </li>
+        );
+      }
+
+      function CompanyItem({ company, defaultVisibility }) {
+        const [isVisible, setIsVisisble] = useState(defaultVisibility);
+
+        return (
+          <li
+            className="company"
+            onMouseEnter={() => setIsVisisble(true)}
+            onMouseLeave={() => setIsVisisble(false)}
+          >
+            <p className="company-name">{company.companyName}</p>
+            {isVisible && (
+              <p className="company-phrase">
+                <strong>About:</strong> {company.phrase}
+              </p>
+            )}
+          </li>
+        );
+      }
+
+      function List({ title, items, render }) {
+        const [isOpen, setIsOpen] = useState(true);
+        const [isCollapsed, setIsCollapsed] = useState(false);
+
+        const displayItems = isCollapsed ? items.slice(0, 3) : items;
+
+        function toggleOpen() {
+          setIsOpen((isOpen) => !isOpen);
+          setIsCollapsed(false);
+        }
+
+        return (
+          <div className="list-container">
+            <div className="heading">
+              <h2>{title}</h2>
+              <button onClick={toggleOpen}>
+                {isOpen ? <span>&or;</span> : <span>&and;</span>}
+              </button>
+            </div>
+            {isOpen && <ul className="list">{displayItems.map(render)}</ul>}
+
+            <button onClick={() => setIsCollapsed((isCollapsed) => !isCollapsed)}>
+              {isCollapsed ? `Show all ${items.length}` : "Show less"}
+            </button>
+          </div>
+        );
+      }
+
+      // LATER: Let's say we got this component from a 3rd-party library, and can't change it. But we still want to add the 2 toggle functionalities to it
+      function ProductList({ title, items }) {
+        return (
+          <ul className="list">
+            {items.map((product) => (
+              <ProductItem key={product.productName} product={product} />
+            ))}
+          </ul>
+        );
+      }
+
+      export default function App() {
+        const ProductListWithToggles = withToggles(ProductList);
+        return (
+          <div>
+            <h1>Render Props Demo</h1>
+
+           
+            <div className="col-2">
+              <ProductList title="Products HOC" items={products} />
+              <ProductListWithToggles title="Products HOC" items={products} />
+            </div>
+          </div>
+        );
+      }
+
+    -HOC.js
+     import { useState } from "react";
+     export default function withToggles(WrappedComponent) {
+        return function List(props) {
+          const [isOpen, setIsOpen] = useState(true);
+          const [isCollapsed, setIsCollapsed] = useState(false);
+
+          const displayItems = isCollapsed ? props.items.slice(0, 3) : props.items;
+
+          function toggleOpen() {
+            setIsOpen((isOpen) => !isOpen);
+            setIsCollapsed(false);
+          }
+
+          return (
+            <div className="list-container">
+              <div className="heading">
+                <h2>{props.title}</h2>
+                <button onClick={toggleOpen}>
+                  {isOpen ? <span>&or;</span> : <span>&and;</span>}
+                </button>
+              </div>
+              {isOpen && <WrappedComponent {...props} items={displayItems} />}
+
+              <button onClick={() => setIsCollapsed((isCollapsed) => !isCollapsed)}>
+                {isCollapsed ? `Show all ${props.items.length}` : "Show less"}
+              </button>
+            </div>
+          );
+        };
+      }
+
+     
+
+
+
+
+  -compound component pattern
+    The Compound Component Pattern in React allows multiple components to work together as a unit while keeping them flexible and reusable.
+    Instead of having a single component with many props controlling its behavior, we split it into smaller components that communicate using React Context.
+    -created a modal component using compound component pattern for adding cabins
+
+-Example
+
+      App.jsx
+
+      import Counter from "./Counter";
+      import "./styles.css";
+
+      export default function App() {
+        return (
+          <div>
+            <h1>Compound Component Pattern</h1>
+            <Counter
+              iconIncrease="+"
+              iconDecrease="-"
+              label="My NOT so flexible counter"
+              hideLabel={false}
+              hideIncrease={false}
+              hideDecrease={false}
+              positionCount="top"
+            />
+
+            <Counter>
+              <Counter.Decrease icon="-" />
+              <Counter.Count />
+              <Counter.Increase icon="+" />
+              <Counter.Label>My super Flexible Counter</Counter.Label>
+            </Counter>
+
+            <div>
+              <Counter>
+                <Counter.Decrease icon="-" />
+                <Counter.Increase icon="+" />
+              </Counter>
+            </div>
+          </div>
+        );
+      }
+
+
+      Counter.jsx
+
+      import { createContext, useState, useContext } from "react";
+
+      // 1. Create a context
+      const CounterContext = createContext();
+
+      //2.Create parent Component
+      function Counter({ children }) {
+        const [count, setCount] = useState(0);
+        const increase = () => setCount((c) => c + 1);
+        const decrease = () => setCount((c) => c - 1);
+
+        return (
+          <CounterContext.Provider value={{ count, increase, decrease }}>
+            <span>{children}</span>
+          </CounterContext.Provider>
+        );
+      }
+
+      //3.Create child Component to help implementing common
+      function Count() {
+        const { count } = useContext(CounterContext);
+        return <span>{count}</span>;
+      }
+
+      function Label({ children }) {
+        return <span>{children}</span>;
+      }
+
+      function Increase({ icon }) {
+        const { increase } = useContext(CounterContext);
+        return <button onClick={increase}>{icon}</button>;
+      }
+
+      function Decrease({ icon }) {
+        const { decrease } = useContext(CounterContext);
+        return <button onClick={decrease}>{icon}</button>;
+      }
+
+      //4.Add child components as properties to parent Component
+      Counter.Count = Count;
+      Counter.Label = Label;
+      Counter.Increase = Increase;
+      Counter.Decrease = Decrease;
+
+      export default Counter;
+
+
+      https://codesandbox.io/p/devbox/react-compound-components-starter-forked-hrtfj4?file=%2Fsrc%2FCounter.js%3A1%2C1-46%2C1&workspaceId=ws_WSiQtniHGrfhPmKm7JAJwC
+
+
+21.React's createPortal is used to render a component's UI outside of its normal DOM hierarchy while preserving React's reconciliation (state and event handling). 
+   It's especially useful for rendering modals, tooltips, dropdowns, and pop-ups.
+   
+  example:
+
+     ReactDOM.createPortal(child, container)
+     child: The JSX element or component to render.
+     container: The DOM node where the child should be rendered.
+
+     createPortal(<Overlay>
+      <StyledModal>
+        <Button onClick={onClose}>
+          <HiXMark/>
+        </Button>
+        <div>{children}</div>
+      </StyledModal>
+    </Overlay>,document.body)
+
+22.Clone Element
+    <div>{cloneElement(children,{onCloseModal:close})}</div>
+23.searchParams (from useSearchParams in react-router-dom) is used to read, manipulate, and update URL query parameters in a React application. 
+   It helps manage filters, search terms, and other dynamic values in the URL without affecting the component state.
+
+   const [searchParams,setSearchParams]=useSearchParams()
+
+24. prefetching query
+  const queryClient=useQueryClient();
+  const pageCount=Math.ceil(count/PAGE_SIZE)
+      if(page<pageCount){
+          queryClient.prefetchQuery({
+            queryKey: ["bookings", filter, sortBy, page + 1], //dependency  array of the usequery
+            queryFn: () => getBookings({ filter, sortBy, page: page + 1 }),
+          });
+      }
+      
+
+      
+          
+
+
+                
+
+
+
+
+                  
